@@ -3,13 +3,8 @@ from django.conf.urls.i18n import i18n_patterns
 from django.conf import settings
 from django.views.generic import TemplateView
 
-<<<<<<< HEAD
 from catmaid.views import HomepageView, UseranalyticsView, ExportWidgetView
-from neurocity.views import SegmentDecisionView
-=======
-from catmaid.views import HomepageView
 from neurocity.views import *
->>>>>>> Proper dependency. Added templates. Synchronize accounts login urls. Added social app icons
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
