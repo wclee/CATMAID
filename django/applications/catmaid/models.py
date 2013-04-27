@@ -671,11 +671,9 @@ class Segments(UserFocusedModel):
 
     stack = models.ForeignKey(Stack)
 
-    assembly = models.ForeignKey(ClassInstance,null=True)
     # convention: {origin_section}_{target_section}-{node_id}
     node_id = models.CharField(max_length=255,db_index=True)
-    # nr of human votes
-    nr_of_votes = models.IntegerField(db_index=True, default=0) 
+
     segmentid = models.IntegerField(db_index=True)
     segmenttype = models.IntegerField(db_index=True)
     origin_section = models.IntegerField(db_index=True)
@@ -686,7 +684,19 @@ class Segments(UserFocusedModel):
     cost = models.FloatField(db_index=True)
     randomforest_cost = models.FloatField()
     segmentation_cost = models.FloatField()
-    direction = models.BooleanField() # 0:LR if origin_section< target_section / 1:RL as boolean, otherwise
+    # 0:LR if origin_section< target_section / 1:RL as boolean, otherwise
+    direction = models.BooleanField()
+    center_y = models.FloatField(db_index=True)
+    center_x = models.FloatField(db_index=True)
+
+    # Read/Write columns
+    # ------------------
+    assembly = models.ForeignKey(ClassInstance,null=True)
+
+    # nr of human votes
+    nr_of_votes = models.IntegerField(db_index=True, default=0)
+
+    # default is 1. 'deleted' is 0 (not show again)
     status = models.IntegerField(db_index=True, default=1)
 
 class SegmentsData(models.Model):
@@ -733,11 +743,14 @@ class SegmentVote(UserFocusedModel):
     creation_time = models.DateTimeField(default=datetime.now)
     stack = models.ForeignKey(Stack)
 
-    segment = models.ForeignKey(Segments,null=False)
     # segment_node_id = models.CharField(max_length=255,db_index=True)
+    segment = models.ForeignKey(Segments,null=False)
 
-    vote = models.IntegerField(db_index=True,null=False)
     # convention is 1: good; 2: unclear; 3: bad
+    vote = models.IntegerField(db_index=True,null=False)
+
+    # interval from loading the vote page to sending the vote ajax
+    elapsed_time = models.IntegerField(null=False)
 
 class SegmentComment(UserFocusedModel):
 
@@ -753,12 +766,16 @@ class Slices(UserFocusedModel):
     edition_time = models.DateTimeField(default=datetime.now)
     stack = models.ForeignKey(Stack)
 
-    assembly = models.ForeignKey(ClassInstance,null=True,db_index=True)
-    sectionindex = models.IntegerField(db_index=True) # index of the section
-    slice_id = models.IntegerField(db_index=True) # int id local to the section
-    node_id = models.CharField(max_length=255,db_index=True) # convention: {sectionindex}_{slide_id}
+    # index of the section
+    sectionindex = models.IntegerField(db_index=True)
 
-    # boundingbox (in pixel coordiantes)
+    # int id local to the section
+    slice_id = models.IntegerField(db_index=True)
+
+    # convention: {sectionindex}_{slide_id}
+    node_id = models.CharField(max_length=255,db_index=True)
+    
+    # boundingbox (in voxel coordiantes)
     min_x = models.IntegerField(db_index=True)
     min_y = models.IntegerField(db_index=True)
     max_x = models.IntegerField(db_index=True)
@@ -768,9 +785,20 @@ class Slices(UserFocusedModel):
     center_y = models.FloatField(db_index=True)
     threshold = models.FloatField()
     size = models.IntegerField(db_index=True)
+
+    # Read/Write columns
+    # ------------------
+    assembly = models.ForeignKey(ClassInstance,null=True,db_index=True)
+
+    # default is 1. 'deleted' is 0 (not show again)
     status = models.IntegerField(db_index=True, default=1)
 
-    # 0: default, 1: ends, 2: continuation with no segment, 3: branch with no segment, 5: selected segment
+    # convention is
+    # 0: default
+    # 1: ends
+    # 2: continuation with no segment
+    # 3: branch with no segment
+    # 5: selected segment
     flag_left = models.IntegerField(db_index=True)
     flag_right = models.IntegerField(db_index=True)
 
